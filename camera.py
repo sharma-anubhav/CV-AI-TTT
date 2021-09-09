@@ -1,0 +1,310 @@
+# import cv2
+# import pickle
+# from imutils.video import WebcamVideoStream
+# import face_recognition
+# # img=WebcamVideoStream(src=0).start().read()
+# # print(img)
+#
+# class VideoCamera(object):
+#     def __init__(self):
+#
+#         self.stream = WebcamVideoStream(src=0).start()
+#
+#     def __del__(self):
+#         self.stream.stop()
+#
+#     # def predict(self, frame, knn_clf, distance_threshold=0.4):
+#     #     # Find face locations
+#     #     X_face_locations = face_recognition.face_locations(frame)
+#     #     # print("X_face_locations",X_face_locations[0])
+#     #     # X_face_locations[0][0]: X_face_locations[0][1], X_face_locations[0][2]: X_face_locations[0][3]
+#     #     # try:
+#     #     #     print("here")
+#     #     #     cv2.imshow("fdgd",frame[57:304,242:118])
+#     #     #     cv2.waitKey(1)
+#     #     # except:
+#     #     #     pass
+#     #     # If no faces are found in the image, return an empty result.
+#     #     if len(X_face_locations) == 0:
+#     #         return []
+#     #
+#     #     # Find encodings for faces in the test iamge
+#     #     faces_encodings = face_recognition.face_encodings(frame, known_face_locations=X_face_locations)
+#     #
+#     #     # Use the KNN model to find the best matches for the test face
+#     #     closest_distances = knn_clf.kneighbors(faces_encodings, n_neighbors=1)
+#     #     are_matches = [closest_distances[0][i][0] <= distance_threshold for i in range(len(X_face_locations))]
+#     #     for i in range(len(X_face_locations)):
+#     #         print("closest_distances")
+#     #         print(closest_distances[0][i][0])
+#     #
+#     #     # Predict classes and remove classifications that aren't within the threshold
+#     #     return [(pred, loc) if rec else ("unknown", loc) for pred, loc, rec in
+#     #             zip(knn_clf.predict(faces_encodings), X_face_locations, are_matches)]
+#
+#     def get_frame(self):
+#         image = self.stream.read()
+#
+#         detector=cv2.CascadeClassifier('/home/ashish/Python_Machine_Learning_software/data/haarcascades_GPU/haarcascade_frontalface_default.xml')
+#         face=detector.detectMultiScale(image,1.1,7)
+#         [cv2.rectangle(image,(x,y),(x+w,y+h),(0,255,0),2) for (x,y,h,w) in face]
+#         ret, jpeg = cv2.imencode('.jpg', image)
+#         data = []
+#         data.append(jpeg.tobytes())
+#         return data
+
+import cv2
+import pickle
+from imutils.video import WebcamVideoStream
+#import face_recognition
+import numpy as np
+import cv2
+import time
+from math import inf as infinity
+import numpy as np
+
+
+game = [[' ', ' ', ' '], [' ', ' ', ' '], [' ', ' ', ' ']]
+cap = cv2.VideoCapture(0)
+size = 150  # size of grid
+players = ['X', 'O']
+
+
+def play_move(state, player, block_num):
+    if state[int((block_num - 1) / 3)][(block_num - 1) % 3] is ' ':
+        state[int((block_num - 1) / 3)][(block_num - 1) % 3] = player
+    else:
+        block_num = int(input("Block is not empty, ya blockhead! Choose again: "))
+        play_move(state, player, block_num)
+
+
+def print_board(game_state):
+    print('----------------')
+    print('| ' + str(game_state[0][0]) + ' || ' + str(game_state[0][1]) + ' || ' + str(game_state[0][2]) + ' |')
+    print('----------------')
+    print('| ' + str(game_state[1][0]) + ' || ' + str(game_state[1][1]) + ' || ' + str(game_state[1][2]) + ' |')
+    print('----------------')
+    print('| ' + str(game_state[2][0]) + ' || ' + str(game_state[2][1]) + ' || ' + str(game_state[2][2]) + ' |')
+    print('----------------')
+
+
+def copy_game_state(state):
+    new_state = [[' ', ' ', ' '], [' ', ' ', ' '], [' ', ' ', ' ']]
+    for i in range(3):
+        for j in range(3):
+            new_state[i][j] = state[i][j]
+    return new_state
+
+
+def check_current_state(game_state):
+    # Check if draw
+    draw_flag = 0
+    for i in range(3):
+        for j in range(3):
+            if game_state[i][j] is ' ':
+                draw_flag = 1
+    if draw_flag is 0:
+        return None, "Draw"
+
+    # Check horizontals
+    if (game_state[0][0] == game_state[0][1] and game_state[0][1] == game_state[0][2] and game_state[0][
+        0] is not ' '):
+        return game_state[0][0], "Done"
+    if (game_state[1][0] == game_state[1][1] and game_state[1][1] == game_state[1][2] and game_state[1][
+        0] is not ' '):
+        return game_state[1][0], "Done"
+    if (game_state[2][0] == game_state[2][1] and game_state[2][1] == game_state[2][2] and game_state[2][
+        0] is not ' '):
+        return game_state[2][0], "Done"
+
+    # Check verticals
+    if (game_state[0][0] == game_state[1][0] and game_state[1][0] == game_state[2][0] and game_state[0][
+        0] is not ' '):
+        return game_state[0][0], "Done"
+    if (game_state[0][1] == game_state[1][1] and game_state[1][1] == game_state[2][1] and game_state[0][
+        1] is not ' '):
+        return game_state[0][1], "Done"
+    if (game_state[0][2] == game_state[1][2] and game_state[1][2] == game_state[2][2] and game_state[0][
+        2] is not ' '):
+        return game_state[0][2], "Done"
+
+    # Check diagonals
+    if (game_state[0][0] == game_state[1][1] and game_state[1][1] == game_state[2][2] and game_state[0][
+        0] is not ' '):
+        return game_state[1][1], "Done"
+    if (game_state[2][0] == game_state[1][1] and game_state[1][1] == game_state[0][2] and game_state[2][
+        0] is not ' '):
+        return game_state[1][1], "Done"
+
+    return None, "Not Done"
+
+
+def print_state(game_state):
+    print('----------------')
+    print('| ' + str(game_state[0][0]) + ' || ' + str(game_state[0][1]) + ' || ' + str(game_state[0][2]) + ' |')
+    print('----------------')
+    print('| ' + str(game_state[1][0]) + ' || ' + str(game_state[1][1]) + ' || ' + str(game_state[1][2]) + ' |')
+    print('----------------')
+    print('| ' + str(game_state[2][0]) + ' || ' + str(game_state[2][1]) + ' || ' + str(game_state[2][2]) + ' |')
+    print('----------------')
+
+
+def getBestMove(state, player):
+    '''
+    Minimax Algorithm
+    '''
+    winner_loser, done = check_current_state(state)
+    if done == "Done" and winner_loser == 'O':  # If AI won
+        return 1
+    elif done == "Done" and winner_loser == 'X':  # If Human won
+        return -1
+    elif done == "Draw":  # Draw condition
+        return 0
+
+    moves = []
+    empty_cells = []
+    for i in range(3):
+        for j in range(3):
+            if state[i][j] is ' ':
+                empty_cells.append(i * 3 + (j + 1))
+
+    for empty_cell in empty_cells:
+        move = {}
+        move['index'] = empty_cell
+        new_state = copy_game_state(state)
+        play_move(new_state, player, empty_cell)
+
+        if player == 'O':  # If AI
+            result = getBestMove(new_state, 'X')  # make more depth tree for human
+            move['score'] = result
+        else:
+            result = getBestMove(new_state, 'O')  # make more depth tree for AI
+            move['score'] = result
+
+        moves.append(move)
+
+    # Find best move
+    best_move = None
+    if player == 'O':  # If AI player
+        best = -infinity
+        for move in moves:
+            if move['score'] > best:
+                best = move['score']
+                best_move = move['index']
+    else:
+        best = infinity
+        for move in moves:
+            if move['score'] < best:
+                best = move['score']
+                best_move = move['index']
+
+    return best_move
+
+
+def playermove(evaluate):
+    for image, i, j in evaluate:
+        grey = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+        ret, thresh = cv2.threshold(grey.copy(), 105, 255, cv2.THRESH_BINARY_INV)
+        contours, hierarchy = cv2.findContours(thresh, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
+        print(len(contours), i, j)
+        if len(contours) > 0:
+            game[i][j] = 'X'
+            return game
+
+
+class VideoCamera(object):
+    global game, cap,size, players
+
+
+    def __init__(self):
+        # Using OpenCV to capture from device 0. If you have trouble capturing
+        # from a webcam, comment the line below out and use a video file
+        # instead.
+
+        self.stream = WebcamVideoStream(src=0).start()
+        #with open("trained_knn_model.clf", 'rb') as f:
+         #   self.knn_clf = pickle.load(f)
+
+    def __del__(self):
+        self.stream.stop()
+
+
+    def get_frame(self):
+        frame = self.stream.read()
+        size = 150
+        x = frame.shape[1] - 3 * size
+        y = 0
+
+
+        evaluate = []
+        cv2.putText(frame,"MAKE SURE THE BACKGROUND OF GRID IS PLAIN" , (5,30), cv2.FONT_HERSHEY_SIMPLEX, 0.75, (255, 255, 255),2,cv2.LINE_AA)
+
+        cv2.rectangle(frame, (x, y), (x + size, y + size), (0, 255, 0), 2)
+        if game[0][0] != ' ':
+            cv2.putText(frame, str(game[0][0]), (x + 40, y + 120), cv2.FONT_HERSHEY_SIMPLEX, 4, (0, 0, 255), 2)
+        else:
+            evaluate.append([frame[y:y + size, x:x + size], 0, 0])
+
+        cv2.rectangle(frame, (x + size, y), (x + 2 * size, y + size), (0, 255, 0), 2)
+        if game[0][1] != ' ':
+            cv2.putText(frame, str(game[0][1]), (x + size + 40, y + 120), cv2.FONT_HERSHEY_SIMPLEX, 4, (0, 0, 255), 2)
+        else:
+            evaluate.append([frame[y:y + size, x + size:x + 2 * size], 0, 1])
+
+        cv2.rectangle(frame, (x + 2 * size, y), (x + 3 * size, y + size), (0, 255, 0), 2)
+        if game[0][2] != ' ':
+            cv2.putText(frame, str(game[0][2]), (x + 2 * size + 40, y + 120), cv2.FONT_HERSHEY_SIMPLEX, 4, (0, 0, 255),
+                        2)
+        else:
+            evaluate.append([frame[y:y + size, x + 2 * size:x + 3 * size], 0, 2])
+
+        y = y + size
+
+        cv2.rectangle(frame, (x, y), (x + size, y + size), (0, 255, 0), 2)
+        if game[1][0] != ' ':
+            cv2.putText(frame, str(game[1][0]), (x + 40, y + 120), cv2.FONT_HERSHEY_SIMPLEX, 4, (0, 0, 255), 2)
+        else:
+            evaluate.append([frame[y:y + size, x:x + size], 1, 0])
+
+        cv2.rectangle(frame, (x + size, y), (x + 2 * size, y + size), (0, 255, 0), 2)
+        if game[1][1] != ' ':
+            cv2.putText(frame, str(game[1][1]), (x + size + 40, y + 120), cv2.FONT_HERSHEY_SIMPLEX, 4, (0, 0, 255), 2)
+        else:
+            evaluate.append([frame[y:y + size, x + size:x + 2 * size], 1, 1])
+
+        cv2.rectangle(frame, (x + 2 * size, y), (x + 3 * size, y + size), (0, 255, 0), 2)
+        if game[1][2] != ' ':
+            cv2.putText(frame, str(game[1][2]), (x + 2 * size + 40, y + 120), cv2.FONT_HERSHEY_SIMPLEX, 4, (0, 0, 255),
+                        2)
+        else:
+            evaluate.append([frame[y:y + size, x + 2 * size:x + 3 * size], 1, 2])
+
+        y = y + size
+
+        cv2.rectangle(frame, (x, y), (x + size, y + size), (0, 255, 0), 2)
+        if game[2][0] != ' ':
+            cv2.putText(frame, str(game[2][0]), (x + 40, y + 120), cv2.FONT_HERSHEY_SIMPLEX, 4, (0, 0, 255), 2)
+        else:
+            evaluate.append([frame[y:y + size, x:x + size], 2, 0])
+
+        cv2.rectangle(frame, (x + size, y), (x + 2 * size, y + size), (0, 255, 0), 2)
+        if game[2][1] != ' ':
+            cv2.putText(frame, str(game[2][1]), (x + size + 40, y + 120), cv2.FONT_HERSHEY_SIMPLEX, 4, (0, 0, 255), 2)
+        else:
+            evaluate.append([frame[y:y + size, x + size:x + 2 * size], 2, 1])
+
+        cv2.rectangle(frame, (x + 2 * size, y), (x + 3 * size, y + size), (0, 255, 0), 2)
+        if game[2][2] != ' ':
+            cv2.putText(frame, str(game[2][2]), (x + 2 * size + 40, y + 120), cv2.FONT_HERSHEY_SIMPLEX, 4, (0, 0, 255),
+                        2)
+        else:
+            evaluate.append([frame[y:y + size, x + 2 * size:x + 3 * size], 2, 2])
+
+
+        ret, jpeg = cv2.imencode('.jpg', frame)
+        data = []
+        name = "a"
+        data.append(jpeg.tobytes())
+        data.append(name)
+        data.append(evaluate)
+        return data
