@@ -29,4 +29,4 @@ Also .exe and .dmg files for the application are provided so that the applicatio
 
 
 ## Project Sample
-![enter image description here](https://github.com/sharma-anubhav/blog/blob/master/img/CV_AI.jpg?raw=true)
+![enter image description here](https://github.com/sharma-anubhav/CV-AI-TTT/blob/master/sample.png?raw=true)
