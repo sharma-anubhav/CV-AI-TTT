@@ -26,17 +26,7 @@ The background should be **Solid Color** only.
 The flask project can be downloaded and run on a local host.
 Also .exe and .dmg files for the application are provided so that the application directly runs without the need for installing any dependancies.
 
-##Process Flow :
-
-```mermaid
-graph TD
-A(Webcam) -- Image Frames --> B[Finger Detection using Contour Extraction]
-B -- Coordinates of Finger / User Move --> C[Update Game State]
-C --> D[AI-Move using MiniMax Algorithm]
-D -- Coordinates --> C
-D -- Wait 5sec for user to make next move -->B
-```
-
+![enter image description here](https://github.com/sharma-anubhav/CV-AI-TTT/blob/master/flowChart.png?raw=true)
 
 ## Project Sample
 ![enter image description here](https://github.com/sharma-anubhav/CV-AI-TTT/blob/master/sample.png?raw=true)
