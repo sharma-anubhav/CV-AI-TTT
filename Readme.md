@@ -5,7 +5,7 @@ Hi! This project aims at simulating the classic game of **TicTacToe** using the 
 
 # Uniqueness
 
-This game is extremely lightweight as it does not use any object tracking pre-trained models and other ML-Algorithms that have the tendency to make the operations heavy. Instead to keep it relatively fast, we process the sections of the grid to extract contours from each grid square and to check if the finger was present inside that section/square.  
+This game is extremely lightweight as it does not use any object tracking pre-trained models and other ML-Algorithms that have the tendency to make the operations heavy. Instead to keep it relatively fast, we process the sections of the grid to extract contours from each grid square and to check if the finger was present inside that section/square. All other projects use heavy object tracking algorithms for this purpose, whereas this approach employes simple basic concepts 
 
 ## Minimax Algorithm
 
@@ -14,7 +14,7 @@ Minimax is a decision rule used in artificial intelligence, game theory, decisio
 ## Libraries Required
 Whats brilliant is that this requires just 2 libraries
 - Opencv
--  numpy
+- numpy
 
 ## Constraints
 
@@ -26,6 +26,16 @@ The background should be **Solid Color** only.
 The flask project can be downloaded and run on a local host.
 Also .exe and .dmg files for the application are provided so that the application directly runs without the need for installing any dependancies.
 
+##Process Flow :
+
+```mermaid
+graph TD
+A(Webcam) -- Image Frames --> B[Finger Detection using Contour Extraction]
+B -- Coordinates of Finger / User Move --> C[Update Game State]
+C --> D[AI-Move using MiniMax Algorithm]
+D -- Coordinates --> C
+D -- Wait 5sec for user to make next move -->B
+```
 
 
 ## Project Sample
