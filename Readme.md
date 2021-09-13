@@ -1,11 +1,11 @@
 # Computer Vision - Artificial Intelligence Enabled TicTacToe
 
-Hi! This project aims at simulating the classic game of **TicTacToe** using the feed from the webcam. The game follows the standard rules of X/O, where the player uses his finger to point to the section of the grid where he wishes to make his move. The user is given a 5 seconds window after each move by the computer.
+Hi! This project aims at simulating the classic game of **TicTacToe** using the feed from the webcam. The game follows the standard rules of X/O, where the player uses his finger to point to the section of the grid where he wishes to make his move. The user is given a 5 seconds window after each move by the computer to make his desired move.
 
 
 # Uniqueness
 
-This game is extremely lightweight as it does not use any object tracking pre-trained models and other ML-Algorithms that have the tendency to make the operations heavy. Instead to keep it relatively fast, we process the sections of the grid to extract contours from each grid square and to check if the finger was present inside that section/square. All other projects use heavy object tracking algorithms for this purpose, whereas this approach employes simple basic concepts 
+This game is extremely lightweight as it does not use any object tracking pre-trained models and other ML-Algorithms that have the tendency to make the operations heavy. Instead to keep it relatively fast, we process the sections of the grid to extract contours from each grid square and to check if the finger was present inside that section/square. All other projects use heavy object tracking algorithms for this purpose, whereas this approach employs simple yet efficient basic concepts.
 
 ## Minimax Algorithm
 
@@ -22,6 +22,9 @@ Since it is a webcam based game, optimal lighting is required.
 The background should be **Solid Color** only.
 
 ## Project Working
+
+Opencv is used to process the webcam feed frame by frame and display a grid onto each frame. This is followed by extracting the image from each square of that grid and computing contours in order to identify if the finger is present inside that particular square or not. This is done for each square sequentially and then the users move is updated into the game state.
+Minimax algorithm is used to compute the AI/Computer move and is also updated into the game state. After the AI move, the user is given a 5 seconds window to place his finger inside the desired position in the grid and the above procedure is repeated untill someone wins.
 
 The flask project can be downloaded and run on a local host.
 Also .exe and .dmg files for the application are provided so that the application directly runs without the need for installing any dependancies.
